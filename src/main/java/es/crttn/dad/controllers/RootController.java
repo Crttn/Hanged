@@ -1,6 +1,8 @@
 package es.crttn.dad.controllers;
 
 import javafx.application.Application;
+import javafx.beans.property.SimpleListProperty;
+import javafx.collections.FXCollections;
 import javafx.fxml.FXML;
 import javafx.fxml.FXMLLoader;
 import javafx.fxml.Initializable;
@@ -18,19 +20,15 @@ import java.util.ResourceBundle;
 public class RootController implements Initializable {
 
     @FXML
-    private TabPane gamePane;
-
-    @FXML
-    private ImageView imageView;
-
-    @FXML
     private AnchorPane root;
 
     @FXML
-    private AnchorPane scorePane;
+    private Tab wordsTab;
 
     @FXML
-    private Tab wordsPane;
+    private WordsController wordsController;
+
+    private final ListProperty words = new SimpleListProperty(FXCollections.observableArrayList());
 
     public RootController() {
         try {
@@ -44,9 +42,11 @@ public class RootController implements Initializable {
 
     @Override
     public void initialize(URL location, ResourceBundle resources) {
-
-        Image image1 = new Image(getClass().getResourceAsStream("/images/1.png"));
-        imageView.setImage(image1);
+        if (wordsController != null) {
+            wordsController.loadFromJson(); // Carga las palabras al inicializar la aplicación
+        } else {
+            System.out.println("Error: WordsController no está inicializado.");
+        }
     }
 
     public AnchorPane getRoot() {

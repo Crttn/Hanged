@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.scene.control.Button?>
+<?import javafx.scene.control.ListView?>
+<?import javafx.scene.layout.AnchorPane?>
+<?import javafx.scene.layout.VBox?>
+
+<AnchorPane fx:id="root" xmlns="http://javafx.com/javafx/22" xmlns:fx="http://javafx.com/fxml/1"
+            fx:controller="es.crttn.dad.controllers.WordsController">
+    <VBox alignment="CENTER" spacing="10.0" AnchorPane.bottomAnchor="10.0" AnchorPane.leftAnchor="10.0" AnchorPane.rightAnchor="10.0" AnchorPane.topAnchor="10.0">
+        <!-- Lista de palabras -->
+        <ListView fx:id="wdListView" prefHeight="200.0" prefWidth="200.0" />
+
+        <!-- Botones de añadir y eliminar palabra -->
+        <Button fx:id="wdAddButton" text="Añadir" />
+        <Button fx:id="wdRmButton" text="Eliminar" />
+    </VBox>
+</AnchorPane>
