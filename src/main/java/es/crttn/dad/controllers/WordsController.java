@@ -1,92 +1,99 @@
 package es.crttn.dad.controllers;
 
+
 import com.google.gson.Gson;
-import com.google.gson.reflect.TypeToken;
+import com.google.gson.JsonArray;
+import es.crttn.dad.utils.StringUtils;
+import javafx.beans.property.ListProperty;
+import javafx.beans.property.SimpleListProperty;
+import javafx.beans.property.StringProperty;
 import javafx.collections.FXCollections;
-import javafx.collections.ObservableList;
+import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
+import javafx.fxml.FXMLLoader;
 import javafx.fxml.Initializable;
-import javafx.scene.control.Button;
 import javafx.scene.control.ListView;
 import javafx.scene.control.TextInputDialog;
+import javafx.scene.layout.BorderPane;
 
+import java.io.BufferedReader;
 import java.io.IOException;
+import java.io.InputStreamReader;
 import java.net.URL;
-import java.nio.file.Files;
-import java.nio.file.Paths;
-import java.util.List;
-import java.util.Optional;
+import java.util.Random;
 import java.util.ResourceBundle;
 
 public class WordsController implements Initializable {
 
+    private final ListProperty<String> wordsListProperty = new SimpleListProperty<>(FXCollections.observableArrayList());
     @FXML
-    private Button wdAddButton;
-
+    private BorderPane root;
     @FXML
-    private ListView<String> wdListView;
+    private ListView<String> savedwordsListView;
 
-    @FXML
-    private Button wdRmButton;
+    public WordsController() {
+        try {
+            FXMLLoader loader = new FXMLLoader(getClass().getResource("/fxml/WordsView.fxml"));
+            loader.setController(this);
+            loader.load();
+        } catch (IOException e) {
+            throw new RuntimeException(e);
+        }
 
-    private ObservableList<String> wordsList;
-    private static final String jsonFilePath = "/json/words.json";
+        Gson gson = new Gson();
+
+        try (BufferedReader br = new BufferedReader(new InputStreamReader(getClass().getResourceAsStream("/json/words.json")))) {
+
+            JsonArray wordsArray = gson.fromJson(br, JsonArray.class);
+
+            for (int i = 0; i < wordsArray.size(); i++) {
+                String word = StringUtils.unaccent(wordsArray.get(i).getAsString().toUpperCase());
+                wordsListProperty.add(word);
+            }
+
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+    }
 
     @Override
     public void initialize(URL location, ResourceBundle resources) {
+        savedwordsListView.itemsProperty().bindBidirectional(wordsListProperty);
 
-        wordsList = FXCollections.observableArrayList();
-        wdListView.setItems(wordsList);
-
-        wdAddButton.setOnAction(e -> addWord());
-        wdRmButton.setOnAction(e -> removeWord());
     }
 
-    void loadFromJson() {
-        try {
-            String json = new String(Files.readAllBytes(Paths.get(jsonFilePath)));
-            List<String> palabras = new Gson().fromJson(json, new TypeToken<List<String>>() {}.getType());
-            wordsList.setAll(palabras); // Actualizar ObservableList con palabras cargadas
-        } catch (IOException e) {
-            System.out.println("Error al cargar el archivo JSON: " + e.getMessage());
-        }
+
+    public BorderPane getRoot() {
+        return root;
     }
 
-    private void saveToJson() {
-        try {
-            String json = new Gson().toJson(wordsList);
-            Files.write(Paths.get(jsonFilePath), json.getBytes());
-        } catch (IOException e) {
-            System.out.println("Error al guardar el archivo JSON: " + e.getMessage());
-        }
+    public ListProperty<String> getWordsListPropertyProperty() {
+        return wordsListProperty;
     }
 
-    private void addWord() {
-        TextInputDialog dialog = new TextInputDialog();
-        dialog.setTitle("Añadir Palabra");
-        dialog.setHeaderText("Añadir una nueva palabra");
-        dialog.setContentText("Palabra:");
+    public String getRandomWord() {
+        return wordsListProperty.get(new Random().nextInt(wordsListProperty.getSize()));
+    }
 
-        Optional<String> result = dialog.showAndWait();
-        result.ifPresent(palabra -> {
-            if (!palabra.isBlank() && !wordsList.contains(palabra)) {
-                wordsList.add(palabra); // Añadir palabra a la ObservableList
-                saveToJson(); // Guardar cambios en JSON
-            } else {
-                System.out.println("La palabra ya existe o es inválida.");
+    @FXML
+    void onWordAddAction(ActionEvent event) {
+
+        TextInputDialog tid = new TextInputDialog();
+        tid.setTitle("Agregar Palabra");
+        tid.setHeaderText("Aquí puedes agregar una palabra a la lista");
+        tid.showAndWait().ifPresent(input -> {
+
+            if (!input.isEmpty() && !input.isBlank()) {
+                if (!wordsListProperty.contains(input.toUpperCase())) {
+                    wordsListProperty.add(input.toUpperCase());
+                }
             }
         });
     }
 
-    private void removeWord() {
-        String palabraSeleccionada = wdListView.getSelectionModel().getSelectedItem();
-        if (palabraSeleccionada != null) {
-            wordsList.remove(palabraSeleccionada); // Quitar palabra de la ObservableList
-            saveToJson(); // Guardar cambios en JSON
-        } else {
-            System.out.println("Seleccione una palabra para eliminar.");
-        }
+    @FXML
+    void onDeleteWordAction(ActionEvent event) {
+        wordsListProperty.remove(savedwordsListView.getSelectionModel().getSelectedItem());
     }
-
-
 }
+

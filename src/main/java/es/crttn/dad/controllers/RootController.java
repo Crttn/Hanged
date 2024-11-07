@@ -1,17 +1,12 @@
 package es.crttn.dad.controllers;
 
-import javafx.application.Application;
-import javafx.beans.property.SimpleListProperty;
-import javafx.collections.FXCollections;
+import es.crttn.dad.HangedApp;
 import javafx.fxml.FXML;
 import javafx.fxml.FXMLLoader;
 import javafx.fxml.Initializable;
 import javafx.scene.control.Tab;
 import javafx.scene.control.TabPane;
-import javafx.scene.image.Image;
-import javafx.scene.image.ImageView;
-import javafx.scene.layout.AnchorPane;
-import javafx.stage.Stage;
+import javafx.scene.layout.BorderPane;
 
 import java.io.IOException;
 import java.net.URL;
@@ -20,15 +15,23 @@ import java.util.ResourceBundle;
 public class RootController implements Initializable {
 
     @FXML
-    private AnchorPane root;
+    private BorderPane root;
+
+    @FXML
+    private Tab gameTab;
 
     @FXML
     private Tab wordsTab;
 
     @FXML
-    private WordsController wordsController;
+    private Tab scoreTab;
 
-    private final ListProperty words = new SimpleListProperty(FXCollections.observableArrayList());
+    @FXML
+    private TabPane tabPane;
+
+    private final WordsController wordsController = new WordsController();
+    private final GameController gameController = new GameController();
+    private final ScoresController scoresController = new ScoresController();
 
     public RootController() {
         try {
@@ -42,14 +45,26 @@ public class RootController implements Initializable {
 
     @Override
     public void initialize(URL location, ResourceBundle resources) {
-        if (wordsController != null) {
-            wordsController.loadFromJson(); // Carga las palabras al inicializar la aplicación
-        } else {
-            System.out.println("Error: WordsController no está inicializado.");
-        }
+
+
+        gameTab.setContent(gameController.getRoot());
+        wordsTab.setContent(wordsController.getRoot());
+        scoreTab.setContent(scoresController.getRoot());
+        gameController.wordPropertyProperty().set(getWordsController().getRandomWord());
+
+        gameController.hiddenWord();
     }
 
-    public AnchorPane getRoot() {
+    public BorderPane getRoot() {
         return root;
     }
+
+    public WordsController getWordsController() {
+        return wordsController;
+    }
+
+    public GameController getGameController() {
+        return gameController;
+    }
 }
+
