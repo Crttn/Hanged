@@ -1,5 +1,6 @@
 package es.crttn.dad.controllers;
 
+import es.crttn.dad.HangedApp;
 import javafx.beans.property.*;
 import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
@@ -110,7 +111,11 @@ public class GameController implements Initializable {
             Alert winAlert = new Alert(Alert.AlertType.INFORMATION);
             winAlert.setTitle("Has Ganado");
             winAlert.setHeaderText("FELICIDADES HAS GANADO");
+            winAlert.setContentText("Palabra oculta: " + wordProperty.get());
             winAlert.show();
+
+            wordProperty.set(HangedApp.getRootController().getWordsController().getRandomWord());
+            hiddenWord();
         }
     }
 

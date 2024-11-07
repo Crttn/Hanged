@@ -14,7 +14,7 @@ import java.util.List;
 
 public class HangedApp extends Application {
 
-    private static RootController rootController = new RootController();
+    private static final RootController rootController = new RootController();
 
     @Override
     public void start(Stage primaryStage) throws Exception {

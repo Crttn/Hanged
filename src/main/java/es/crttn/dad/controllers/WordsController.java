@@ -62,7 +62,6 @@ public class WordsController implements Initializable {
 
     }
 
-
     public BorderPane getRoot() {
         return root;
     }
