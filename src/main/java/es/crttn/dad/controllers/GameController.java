@@ -48,6 +48,7 @@ public class GameController implements Initializable {
     private final StringProperty inputProperty = new SimpleStringProperty("");
     private final StringProperty wordProperty = new SimpleStringProperty();
     private final ObjectProperty<Image> imageProperty = new SimpleObjectProperty<>(new Image("/images/1.png"));
+    private String hiddenWord;
 
 
     public GameController() {
@@ -77,10 +78,9 @@ public class GameController implements Initializable {
 
     public void hiddenWord() {
         wordProgressProperty.set(wordProperty.get());
-        String palabra = wordProgressProperty.get().toString();
 
-        String palabraConGuiones = "_".repeat(palabra.length());
-        wordProgressProperty.set(palabraConGuiones);
+        hiddenWord = "_".repeat(wordProgressProperty.get().toString().length());
+        wordProgressProperty.set(hiddenWord);
     }
 
 
@@ -116,13 +116,83 @@ public class GameController implements Initializable {
 
             wordProperty.set(HangedApp.getRootController().getWordsController().getRandomWord());
             hiddenWord();
+        } else {
+            //SI falla se termina el juego y empieza de nuevo
+
+            wordProperty.set(HangedApp.getRootController().getWordsController().getRandomWord());
+            hiddenWord();
         }
     }
 
     @FXML
     void onTryLetterAction(ActionEvent event) {
 
+        // Validar entrada
+        if (inputProperty.get() == null || inputProperty.get().isEmpty()) {
+            Alert errorAlert = new Alert(Alert.AlertType.ERROR);
+            errorAlert.setTitle("Entrada inválida");
+            errorAlert.setHeaderText("Por favor, introduce una letra válida.");
+            errorAlert.show();
+            return;
+        }
 
+        char letra = inputProperty.get().toUpperCase().charAt(0);
+        boolean acierto = false;
+
+        StringBuilder hiddenWordBuilder = new StringBuilder(hiddenWord);
+
+        // Verificar cada letra de la palabra
+        for (int i = 0; i < wordProperty.get().length(); i++) {
+            if (wordProperty.get().charAt(i) == letra) {
+                hiddenWordBuilder.setCharAt(i, letra);
+                acierto = true;
+            }
+        }
+
+        if (acierto) {
+            // Actualizar progreso
+            hiddenWord = hiddenWordBuilder.toString();
+            wordProgressProperty.set(hiddenWord);
+
+            // Verificar si se ha completado la palabra
+            if (hiddenWord.equals(wordProperty.get())) {
+                Alert winAlert = new Alert(Alert.AlertType.INFORMATION);
+                winAlert.setTitle("¡Has Ganado!");
+                winAlert.setHeaderText("Felicidades, has adivinado la palabra.");
+                winAlert.setContentText("La palabra era: " + wordProperty.get());
+                winAlert.show();
+
+                // Reiniciar el juego
+                wordProperty.set(HangedApp.getRootController().getWordsController().getRandomWord());
+                hiddenWord();
+            }
+        } else {
+            // Restar una vida si no acertó
+            lifesProperty.set(lifesProperty.get() + 1);
+            updateImage();
+
+            // Actualizar letras falladas
+            failedLetterProperty.set(failedLetterProperty.get() + letra + " ");
+
+            // Verificar si ha perdido
+            if (lifesProperty.get() <= 0) {
+                Alert loseAlert = new Alert(Alert.AlertType.INFORMATION);
+                loseAlert.setTitle("Has Perdido");
+                loseAlert.setHeaderText("Juego terminado");
+                loseAlert.setContentText("La palabra era: " + wordProperty.get());
+                loseAlert.show();
+
+                // Reiniciar el juego
+                wordProperty.set(HangedApp.getRootController().getWordsController().getRandomWord());
+                hiddenWord();
+                lifesProperty.set(maxLifeProperty.get());
+                failedLetterProperty.set("");
+                updateImage();
+            }
+        }
+
+        // Limpiar el campo de texto después de cada intento
+        inputProperty.set("");
 
     }
 }
